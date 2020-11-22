@@ -13,20 +13,20 @@ namespace comoverip
 class Exchange
 {
 public:
-     /// @brief Добавить актора для обмена
+     /// @brief Р”РѕР±Р°РІРёС‚СЊ Р°РєС‚РѕСЂР° РґР»СЏ РѕР±РјРµРЅР°
      /// @param actor
-     /// @return id актора
+     /// @return id Р°РєС‚РѕСЂР°
      static uint64_t Insert( std::shared_ptr< BaseActor > actor );
 
-     /// @brief Отправить сообщение актору
-     /// @param id актора
-     /// @param message сообщение
-     /// @return true сообщение отправлено актору
-     /// @return false актор с таким id не найден, ссылка на актор невалидна
+     /// @brief РћС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ Р°РєС‚РѕСЂСѓ
+     /// @param id Р°РєС‚РѕСЂР°
+     /// @param message СЃРѕРѕР±С‰РµРЅРёРµ
+     /// @return true СЃРѕРѕР±С‰РµРЅРёРµ РѕС‚РїСЂР°РІР»РµРЅРѕ Р°РєС‚РѕСЂСѓ
+     /// @return false Р°РєС‚РѕСЂ СЃ С‚Р°РєРёРј id РЅРµ РЅР°Р№РґРµРЅ, СЃСЃС‹Р»РєР° РЅР° Р°РєС‚РѕСЂ РЅРµРІР°Р»РёРґРЅР°
      static bool Send( uint64_t id, std::shared_ptr< BaseMessage > message );
 
-     /// @brief Удалить катора из обмена
-     /// @param id актора
+     /// @brief РЈРґР°Р»РёС‚СЊ РєР°С‚РѕСЂР° РёР· РѕР±РјРµРЅР°
+     /// @param id Р°РєС‚РѕСЂР°
      static void Remove( uint64_t id );
 
 private:

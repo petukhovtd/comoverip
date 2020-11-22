@@ -9,7 +9,7 @@ namespace comoverip
 class BaseActor
 {
 public:
-     /// @brief Получение сообщения
+     /// @brief РћС‚РїСЂР°РІРёС‚СЊ СЃРѕРѕР±С‰РµРЅРёРµ
      /// @param message
      virtual void Receive( std::shared_ptr< BaseMessage > message ) = 0;
 
