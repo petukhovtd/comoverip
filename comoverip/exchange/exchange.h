@@ -25,7 +25,7 @@ public:
      /// @return false актор с таким id не найден, ссылка на актор невалидна
      static bool Send( uint64_t id, std::shared_ptr< BaseMessage > message );
 
-     /// @brief Удалить катора из обмена
+     /// @brief Удалить атора из обмена
      /// @param id актора
      static void Remove( uint64_t id );
 

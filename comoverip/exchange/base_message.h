@@ -4,6 +4,7 @@
 namespace comoverip
 {
 
+/// @brief Описание базового интерфеса класса сообщений
 class BaseMessage
 {
 public:
