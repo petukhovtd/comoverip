@@ -10,7 +10,7 @@ namespace comoverip
 /// @brief Класс Actor реализующий enable_shared_from_this
 /// @tparam A Тип класса
 /// Надстройка над BaseActor, реализующий enable_shared_from_this принцип, необходимый для получения слабых ссылок
-/// для передачи в другой поток исполнения
+/// и передачи в другой поток исполнения
 template< typename A >
 class Actor: public std::enable_shared_from_this< A >, public BaseActor
 {
@@ -43,8 +43,8 @@ public:
           return Weak( std::enable_shared_from_this< A >::shared_from_this() );
      }
 
-private:
-     Actor() = default;
+//private:
+//     Actor() = default;
 };
 
 }
