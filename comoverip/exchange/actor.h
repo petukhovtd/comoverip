@@ -18,6 +18,8 @@ public:
      using Ptr = std::shared_ptr< A >;
      using Weak = std::weak_ptr< A >;
 
+     Actor() = default;
+
      Actor( const Actor& ) = delete;
 
      Actor( Actor&& ) = delete;
@@ -43,8 +45,6 @@ public:
           return Weak( std::enable_shared_from_this< A >::shared_from_this() );
      }
 
-//private:
-//     Actor() = default;
 };
 
 }
