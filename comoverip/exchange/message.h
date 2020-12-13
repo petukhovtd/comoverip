@@ -6,7 +6,7 @@
 namespace comoverip
 {
 
-/// @brief Вспомогательный класс для создания указателя на Message
+/// @brief Р’СЃРїРѕРјРѕРіР°С‚РµР»СЊРЅС‹Р№ РєР»Р°СЃСЃ РґР»СЏ СЃРѕР·РґР°РЅРёСЏ СѓРєР°Р·Р°С‚РµР»СЏ РЅР° Message
 /// @tparam M
 template< typename M >
 class Message: public BaseMessage
@@ -24,9 +24,9 @@ public:
 
      Message& operator=( Message&& ) = delete;
 
-     /// @brief Создание экземпляра класса
-     /// @param t параметры конструктора
-     /// @return экземпляр класса
+     /// @brief РЎРѕР·РґР°РЅРёРµ СЌРєР·РµРјРїР»СЏСЂР° РєР»Р°СЃСЃР°
+     /// @param t РїР°СЂР°РјРµС‚СЂС‹ РєРѕРЅСЃС‚СЂСѓРєС‚РѕСЂР°
+     /// @return СЌРєР·РµРјРїР»СЏСЂ РєР»Р°СЃСЃР°
      template< typename... T >
      static Ptr Create( T... t )
      {
