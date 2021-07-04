@@ -2,98 +2,64 @@
 #define COMOVERIP_LOGGER_H
 
 #include <string>
-#include <syslog.h>
-#include <vector>
-#include <ostream>
-#include <mutex>
+#include <string_view>
+#include <atomic>
 
 namespace comoverip
 {
 
-/// @brief Логирование в syslog или std::cout
-/// для std::cout потокобезопасен
+/// @brief Класс Logger.
 class Logger
 {
 public:
      /// @brief Уровень логирования
      enum LogLevel: int
      {
-          LogCrit = LOG_CRIT,
-          LogErr = LOG_ERR,
-          LogWarning = LOG_WARNING,
-          LogNotice = LOG_NOTICE,
-          LogInfo = LOG_INFO,
-          LogDebug = LOG_DEBUG,
+          LogCrit = 0,
+          LogErr,
+          LogWarning,
+          LogNotice,
+          LogInfo,
+          LogDebug,
+          LogLevelSize,
      };
 
-     /// @brief Деструктор класса
-     ~Logger();
+     /// @brief Установка уровня логирования
+     /// @param[in] logLevel
+     static void Init( LogLevel logLevel );
 
-     /// @brief Сообщение логирования уровня Crit
-     /// @param format
-     /// @param ...
-     static void Crit( const char* format ... );
-
-     /// @brief Сообщение логирования уровня Err
-     /// @param format
-     /// @param ...
-     static void Err( const char* format ... );
-
-     /// @brief Сообщение логирования уровня Warning
-     /// @param format
-     /// @param ...
-     static void Warning( const char* format ... );
-
-     /// @brief Сообщение логирования уровня Notice
-     /// @param format
-     /// @param ...
-     static void Notice( const char* format ... );
-
-     /// @brief Сообщение логирования уровня Info
-     /// @param format
-     /// @param ...
-     static void Info( const char* format ... );
-
-     /// @brief Сообщение логирования уровня Debug
-     /// @param format
-     /// @param ...
-     static void Debug( const char* format ... );
-
-     /// @brief Инициализация syslog
-     /// @param appName имя приложения
-     static void InitSyslog( std::string const& appName );
-
-     /// @brief Установить уровень логирования
-     /// @param logLevel
-     static void SetLogLevel( LogLevel logLevel );
-
-     /// @brief Добавлять название уровня логирования
-     /// только для консоли
-     static void EnablePrefix();
-
-     /// @brief Добавлять метку времени
-     /// только для консоли
-     static void EnableTimeStamp();
+     /// @brief Печать сообщения в лог
+     /// @param[in] logLevel уровень сообщения
+     /// @param[in] func имя функции
+     /// @param[in] format формат сообщения
+     /// @param ... аргументы формата
+     static void Log( LogLevel logLevel, std::string_view func, const char* format, ... )
+     __attribute__ ((__format__ (__printf__, 3, 4)));
 
 private:
      Logger();
 
      static Logger& GetInstance();
 
-     void Log( LogLevel logLevel, const char* format, va_list args );
+     static std::string_view GetLogLevelName( LogLevel logLevel );
 
-     static std::string GetPrefix( LogLevel targetLevel );
-
-     static std::string GetTimeStamp();
+     static int SPrintTimeStamp( char* buffer, size_t maxLen );
 
 private:
-     LogLevel logLevel_;
-     bool toSyslog_;
-     bool levelPrefix_;
-     bool timeStamp_;
-     std::mutex mutex_;
+     std::atomic< LogLevel > logLevel_;
+     size_t timeStampLen_;
 };
 
 }
+
+#define COIP_LOG( logLevel, format, ... ) \
+     comoverip::Logger::Log( logLevel, __FUNCTION__, format, ##__VA_ARGS__ );
+
+#define COIP_LOG_CRIT( format, ... ) COIP_LOG( comoverip::Logger::LogCrit, format, ##__VA_ARGS__ )
+#define COIP_LOG_ERR( format, ... ) COIP_LOG( comoverip::Logger::LogErr, format, ##__VA_ARGS__ )
+#define COIP_LOG_WARNING( format, ... ) COIP_LOG( comoverip::Logger::LogWarning, format, ##__VA_ARGS__ )
+#define COIP_LOG_NOTICE( format, ... ) COIP_LOG( comoverip::Logger::LogNotice, format, ##__VA_ARGS__ )
+#define COIP_LOG_INFO( format, ... ) COIP_LOG( comoverip::Logger::LogInfo, format, ##__VA_ARGS__ )
+#define COIP_LOG_DEBUG( format, ... ) COIP_LOG( comoverip::Logger::LogDebug, format, ##__VA_ARGS__ )
 
 #endif

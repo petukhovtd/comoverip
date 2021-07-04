@@ -3,13 +3,16 @@
 #include <exchange/actor.h>
 #include <exchange/message.h>
 
+#include <utility>
+
 using namespace comoverip;
 
-class TestMessage: public Message< TestMessage >
+class TestMessage
+          : public Message< TestMessage >
 {
 public:
-     explicit TestMessage( const std::string& message )
-               : message_( message )
+     explicit TestMessage( std::string message )
+               : message_( std::move( message ) )
      {}
 
      const std::string& GetMessage() const
@@ -21,26 +24,28 @@ private:
      std::string message_;
 };
 
-class TestActor: public Actor< TestActor >
+class TestActor
+          : public Actor< TestActor >
 {
 public:
      TestActor()
-     : message_()
-     , distatcherId_( 0 )
+               : message_()
+               , dispatcherId_( 0 )
      {}
 
-     explicit TestActor( uint64_t dispatcherId )
-     : message_()
-     , distatcherId_( dispatcherId )
+     explicit TestActor( ActorId dispatcherId )
+               : message_()
+               , dispatcherId_( dispatcherId )
      {}
 
      void Receive( std::shared_ptr< BaseMessage > message ) override
      {
           std::shared_ptr< TestMessage > testMessage = std::dynamic_pointer_cast< TestMessage >( message );
-          if( testMessage )
+          if( !testMessage )
           {
-               message_ = testMessage->GetMessage();
+               return;
           }
+          message_ = testMessage->GetMessage();
      }
 
      const std::string& GetMessage() const
@@ -50,23 +55,23 @@ public:
 
      bool SendToDispatcher( std::string const& message ) const
      {
-          return Exchange::Send( distatcherId_, std::make_shared< TestMessage >( message ));
+          return Exchange::Send( dispatcherId_, std::make_shared< TestMessage >( message ) );
      }
 
 private:
      std::string message_;
-     uint64_t distatcherId_;
+     ActorId dispatcherId_;
 };
 
 
-TEST( ExchangeTest, EmptyTest )
+TEST( ExchangeTest, Empty )
 {
      std::string testMessage = "test";
      uint64_t testActorId = 0;
      EXPECT_FALSE( Exchange::Send( testActorId, TestMessage::Create( testMessage ) ) );
 }
 
-TEST( ExchangeTest, ReceiveTest )
+TEST( ExchangeTest, Receive )
 {
      std::string testMessage = "test";
      TestActor::Ptr actor = TestActor::Create();
@@ -78,9 +83,9 @@ TEST( ExchangeTest, ReceiveTest )
      EXPECT_FALSE( Exchange::Send( testActorId, TestMessage::Create( testMessage ) ) );
 }
 
-TEST( ExchangeTest, SendFromActorTest )
+TEST( ExchangeTest, SendFromActorToActor )
 {
-     std::string testMessage = "test";
+     const std::string testMessage = "test";
 
      TestActor::Ptr receiver = TestActor::Create();
      uint64_t receiverId = Exchange::Insert( receiver );

@@ -1,188 +1,97 @@
 #include <common/logger.h>
-#include <memory>
+#include <cstdio>
 #include <cstdarg>
-#include <map>
-#include <chrono>
-#include <iomanip>
 #include <iostream>
+#include <chrono>
+#include <array>
 
 namespace comoverip
 {
 
-void Logger::Crit( const char* format, ... )
+
+void Logger::Init( Logger::LogLevel logLevel )
 {
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogCrit, format, args );
-     va_end( args );
+     GetInstance().logLevel_ = logLevel;
 }
 
-void Logger::Err( const char* format, ... )
+void Logger::Log( Logger::LogLevel logLevel, std::string_view func, const char* format, ... )
 {
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogErr, format, args );
-     va_end( args );
-}
-
-void Logger::Warning( const char* format, ... )
-{
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogWarning, format, args );
-     va_end( args );
-}
-
-void Logger::Notice( const char* format, ... )
-{
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogNotice, format, args );
-     va_end( args );
-}
-
-void Logger::Info( const char* format, ... )
-{
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogInfo, format, args );
-     va_end( args );
-}
-
-void Logger::Debug( const char* format, ... )
-{
-     Logger& logger = GetInstance();
-     va_list args;
-     va_start( args, format );
-     logger.Log( LogDebug, format, args );
-     va_end( args );
-}
-
-void Logger::InitSyslog( const std::string& appName )
-{
-     Logger& logger = GetInstance();
-     logger.toSyslog_ = true;
-     openlog( appName.c_str(), LOG_NDELAY | LOG_PID, LOG_USER );
-     setlogmask( LOG_UPTO( logger.logLevel_ ));
-}
-
-void Logger::SetLogLevel( Logger::LogLevel logLevel )
-{
-     Logger& logger = GetInstance();
-     logger.logLevel_ = logLevel;
-     if( logger.toSyslog_ )
+     Logger& log = GetInstance();
+     if( log.logLevel_ > logLevel )
      {
-          setlogmask( LOG_UPTO( logger.logLevel_ ));
+          return;
      }
-}
 
-void Logger::EnablePrefix()
-{
-     Logger& logger = GetInstance();
-     logger.levelPrefix_ = true;
-}
+     std::string_view loglevelName = GetLogLevelName( logLevel );
 
-void Logger::EnableTimeStamp()
-{
-     Logger& logger = GetInstance();
-     logger.timeStamp_ = true;
+     va_list args;
+     va_start( args, format );
+     va_list copyArgs;
+     va_copy( copyArgs, args );
+     int messageSize = vsnprintf( nullptr, 0, format, copyArgs );
+     va_end( copyArgs );
+     if( messageSize <= 0 )
+     {
+          va_end( args );
+          return;
+     }
+
+     std::string buffer;
+     size_t it = 0;
+     // {timestamp}_[{level}]_{__FUNCTION__}:_{message}\n
+     // _[ ]_ :_ \n= 7ch
+     buffer.resize( log.timeStampLen_ + loglevelName.size() + messageSize + func.size() + 7 );
+     it += SPrintTimeStamp( &buffer[ 0 ], log.timeStampLen_ );
+     buffer[ it++ ] = ' ';
+
+     buffer[ it++ ] = '[';
+     std::copy( loglevelName.begin(), loglevelName.end(), buffer.begin() + it );
+     it += loglevelName.size();
+     buffer[ it++ ] = ']';
+     buffer[ it++ ] = ' ';
+
+     std::copy( func.begin(), func.end(), buffer.begin() + it );
+     it += func.size();
+     buffer[ it++ ] = ':';
+     buffer[ it++ ] = ' ';
+
+     it += vsnprintf( &buffer[ it ], messageSize + 1, format, args );
+     va_end( args );
+
+     buffer[ it ] = '\n';
+
+     std::clog << buffer << std::flush;
 }
 
 Logger::Logger()
-: logLevel_( LogDebug )
-, toSyslog_( false )
-, levelPrefix_( false )
-, timeStamp_( false )
+          : logLevel_( LogDebug )
+          , timeStampLen_( SPrintTimeStamp( nullptr, 0 ) + 1 )
 {}
-
-
-Logger::~Logger()
-{
-     if( toSyslog_ )
-     {
-          closelog();
-     }
-}
 
 Logger& Logger::GetInstance()
 {
-     static std::unique_ptr< Logger > instance( new Logger );
-     return *instance;
+     static Logger instance;
+     return instance;
 }
 
-void Logger::Log( LogLevel logLevel, const char* format, va_list args )
+std::string_view Logger::GetLogLevelName( Logger::LogLevel logLevel )
 {
-     Logger& logger = GetInstance();
-     if( !logger.toSyslog_ )
-     {
-          if( logLevel > logger.logLevel_ )
-          {
-               return;
-          }
-          std::stringstream ss;
-          if( logger.timeStamp_ )
-          {
-               ss << '[' << GetTimeStamp() << "] ";
-          }
-          if( logger.levelPrefix_ )
-          {
-               ss << '[' << GetPrefix( logLevel ) << "] ";
-          }
-          char* message = NULL;
-          if( -1 != vasprintf( &message, format, args ) )
-          {
-               ss << message;
-               std::lock_guard< std::mutex > lock( logger.mutex_ );
-               std::cout << ss.str() << std::endl << std::flush;
-          }
-          free( message );
-     }
-     else
-     {
-          vsyslog( logLevel, format, args );
-     }
-}
-
-std::string Logger::GetPrefix( LogLevel targetLevel )
-{
-     static std::map< LogLevel, std::string > prefixMap =
+     static const std::array< std::string, ( static_cast< size_t >( LogLevelSize ) ) > loglevelNames =
                {
-                         { LogCrit,    "Critical" },
-                         { LogErr,     "Error" },
-                         { LogWarning, "Warning" },
-                         { LogNotice,  "Notice" },
-                         { LogInfo,    "Info" },
-                         { LogDebug,   "Debug" },
+                         "Crit", "Error", "Warning", "Notice", "Info", "Debug"
                };
-
-     if( prefixMap.count( targetLevel ) == 0 )
-     {
-          return std::string();
-     }
-
-     return prefixMap[ targetLevel ];
+     return loglevelNames[ logLevel ];
 }
 
-std::string Logger::GetTimeStamp()
+int Logger::SPrintTimeStamp( char* buffer, size_t maxLen )
 {
      std::chrono::system_clock::time_point timePoint = std::chrono::system_clock::now();
-     std::time_t now_c = std::chrono::system_clock::to_time_t( timePoint );
-
-     uint64_t timeSinesEpoch = timePoint.time_since_epoch().count();
-     uint64_t millisNanos = timeSinesEpoch % 1000000;
-
-     std::stringstream ss;
-     ss << std::put_time( std::localtime( &now_c ), "%F %T" ) << '.' << std::setw( 6 ) << std::setfill( '0' )
-        << millisNanos;
-     return ss.str();
+     std::time_t tp = std::chrono::system_clock::to_time_t( timePoint );
+     uint64_t partSecond = ( timePoint.time_since_epoch().count() % 1000000000 ) / 1000;
+     tm* tm = std::localtime( &tp );
+     return snprintf( buffer, maxLen, "%04d-%02d-%02d %02d:%02d:%02d.%06lu",
+                      ( tm->tm_year + 1900 ), tm->tm_mon, tm->tm_mday,
+                      tm->tm_hour, tm->tm_min, tm->tm_sec, partSecond );
 }
-
-
-
 
 }

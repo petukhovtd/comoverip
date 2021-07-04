@@ -1,19 +1,13 @@
 enable_testing()
 
-set(TEST_TARGET runAllTest)
+set(TEST_TARGET test)
 
-include_directories(
-          ${PROJECT_SOURCE_DIR}/comoverip
-          ${PROJECT_SOURCE_DIR}/contrib/googletest/googletest
-)
-
-set(
-          SRC_TEST
+set(SOURCES_TEST
+          ${SOURCES_EXCHANGE}
           exchange_test.cpp
-          ${PROJECT_SOURCE_DIR}/comoverip/exchange/exchange.cpp
 )
 
-add_executable(${TEST_TARGET} ${SRC_TEST})
+add_executable(${TEST_TARGET} ${SOURCES_TEST})
 
 target_link_libraries(
           ${TEST_TARGET}

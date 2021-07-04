@@ -10,41 +10,43 @@
 namespace comoverip
 {
 
+typedef uint64_t ActorId;
+
 class Exchange
 {
 public:
      /// @brief Добавить актора для обмена
      /// @param actor
      /// @return id актора
-     static uint64_t Insert( std::shared_ptr< BaseActor > actor );
+     static ActorId Insert( const std::shared_ptr< BaseActor >& actor );
 
      /// @brief Отправить сообщение актору
      /// @param id актора
      /// @param message сообщение
      /// @return true сообщение отправлено актору
      /// @return false актор с таким id не найден, ссылка на актор невалидна
-     static bool Send( uint64_t id, std::shared_ptr< BaseMessage > message );
+     static bool Send( ActorId id, const std::shared_ptr< BaseMessage >& message );
 
      /// @brief Удалить атора из обмена
      /// @param id актора
-     static void Remove( uint64_t id );
+     static void Remove( ActorId id );
 
 private:
      Exchange() = default;
 
      static Exchange& GetInstance();
 
-     static uint64_t GetNextId();
+     static ActorId GetNextId();
 
-     uint64_t InsertImpl( std::shared_ptr< BaseActor > actor );
+     ActorId InsertImpl( const std::shared_ptr< BaseActor >& actor );
 
-     bool SendImpl( uint64_t id, std::shared_ptr< BaseMessage > message );
+     bool SendImpl( ActorId id, const std::shared_ptr< BaseMessage >& message );
 
-     void RemoveImpl( uint64_t id );
+     void RemoveImpl( ActorId id );
 
 private:
-     std::mutex actorsMutex_;
-     std::map< uint64_t, std::weak_ptr< BaseActor>> actors_;
+     std::mutex mutex_;
+     std::map< ActorId, std::weak_ptr< BaseActor>> actors_;
 };
 }
 

@@ -41,8 +41,7 @@ public:
      /// @return слабая ссылка на экземпляр класса
      Weak GetWeak()
      {
-          // TODO in g++ 17 change to weak_from_this()
-          return Weak( std::enable_shared_from_this< A >::shared_from_this() );
+          return std::enable_shared_from_this< A >::weak_from_this();
      }
 
 };
