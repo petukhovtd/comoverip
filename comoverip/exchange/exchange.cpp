@@ -20,7 +20,7 @@ void Exchange::Remove( ActorId id )
 
 ActorId Exchange::GetNextId()
 {
-     static ActorId id = 0;
+     static ActorId id = defaultId;
      return ++id;
 }
 

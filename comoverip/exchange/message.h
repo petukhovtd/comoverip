@@ -2,6 +2,7 @@
 #define COMOVERIP_MESSAGE_H
 
 #include <exchange/base_message.h>
+#include <memory>
 
 namespace comoverip
 {

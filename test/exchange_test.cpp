@@ -38,9 +38,9 @@ public:
                , dispatcherId_( dispatcherId )
      {}
 
-     void Receive( std::shared_ptr< BaseMessage > message ) override
+     void Receive( const std::shared_ptr< BaseMessage >& message ) override
      {
-          std::shared_ptr< TestMessage > testMessage = std::dynamic_pointer_cast< TestMessage >( message );
+          auto testMessage = std::dynamic_pointer_cast< TestMessage >( message );
           if( !testMessage )
           {
                return;
@@ -55,7 +55,7 @@ public:
 
      bool SendToDispatcher( std::string const& message ) const
      {
-          return Exchange::Send( dispatcherId_, std::make_shared< TestMessage >( message ) );
+          return Exchange::Send( dispatcherId_, TestMessage::Create( message ) );
      }
 
 private:

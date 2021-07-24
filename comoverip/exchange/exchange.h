@@ -12,6 +12,8 @@ namespace comoverip
 
 typedef uint64_t ActorId;
 
+static const constexpr ActorId defaultId = 0;
+
 class Exchange
 {
 public:

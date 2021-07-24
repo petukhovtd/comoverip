@@ -17,7 +17,7 @@ void Logger::Init( Logger::LogLevel logLevel )
 void Logger::Log( Logger::LogLevel logLevel, std::string_view func, const char* format, ... )
 {
      Logger& log = GetInstance();
-     if( log.logLevel_ > logLevel )
+     if( log.logLevel_ < logLevel )
      {
           return;
      }

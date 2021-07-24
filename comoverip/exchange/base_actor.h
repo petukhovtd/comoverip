@@ -13,7 +13,7 @@ class BaseActor
 public:
      /// @brief Принять сообщение
      /// @param message
-     virtual void Receive( std::shared_ptr< BaseMessage > message ) = 0;
+     virtual void Receive( const std::shared_ptr< BaseMessage >& message ) = 0;
 
      virtual ~BaseActor() = default;
 };
