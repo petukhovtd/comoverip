@@ -27,6 +27,7 @@ set(SOURCES
           ${SOURCES_COMMON}
           comoverip/message_data.cpp
           comoverip/rtu_client.cpp
+          comoverip/udp_client.cpp
 )
 
 include_directories(${INCLUDES})
