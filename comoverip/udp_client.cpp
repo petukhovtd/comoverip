@@ -9,11 +9,14 @@ namespace comoverip
 
 UdpClient::UdpClient( const std::shared_ptr< io_context >& ioContext, const ip::address& addr, ip::port_type port )
 	  : targetEp_( addr, port )
-	  , receiveSocket_( *ioContext, targetEp_ )
-	  , sendSocket_( *ioContext, ip::udp::endpoint() )
-	  , dispatcherId_( defaultId )
+	  , udpSocket_( *ioContext, ip::udp::endpoint( ip::address_v4::any(), port ) )
 	  , isStarted_( false )
 {}
+
+UdpClient::~UdpClient()
+{
+     StopImpl();
+}
 
 void UdpClient::Receive( const std::shared_ptr< BaseMessage >& message )
 {
@@ -22,11 +25,6 @@ void UdpClient::Receive( const std::shared_ptr< BaseMessage >& message )
 	{
 		Write( targetMessage->GetData() );
 	}
-}
-
-void UdpClient::SetDispatcherId( ActorId id )
-{
-	dispatcherId_ = id;
 }
 
 void UdpClient::Start()
@@ -40,19 +38,7 @@ void UdpClient::Start()
 
 void UdpClient::Stop()
 {
-	if( isStarted_ )
-	{
-		sendSocket_.cancel();
-		receiveSocket_.cancel();
-	}
-	if( sendSocket_.is_open() )
-	{
-		sendSocket_.close();
-	}
-	if( receiveSocket_.is_open() )
-	{
-		receiveSocket_.close();
-	}
+     StopImpl();
 }
 
 void UdpClient::PushReadTask()
@@ -60,7 +46,7 @@ void UdpClient::PushReadTask()
 	auto receiveEp = std::make_shared< ip::udp::endpoint >();
 	auto data = comoverip::BuildDataBuffer();
 	Weak weak = GetWeak();
-	receiveSocket_.async_receive_from( asio::buffer( *data ), *receiveEp, [ data, receiveEp, weak ]( const error_code& ec, size_t size )
+	udpSocket_.async_receive_from( asio::buffer( *data ), *receiveEp, [ data, receiveEp, weak ]( const error_code& ec, size_t size )
 	{
 		if( ec )
 		{
@@ -74,24 +60,36 @@ void UdpClient::PushReadTask()
 			return;
 		}
 		data->resize( size );
-		COIP_LOG_DEBUG( "UdpClient read %zu bytes", size )
-		Exchange::Send( self->dispatcherId_, MessageData::Create( data ) );
+          COIP_LOG_DEBUG( "UdpClient read %zu bytes, from %s:%u", size, receiveEp->address().to_string().c_str(),
+                          receiveEp->port() )
+		Exchange::Send( self->writerId_, MessageData::Create( data ) );
 		self->PushReadTask();
 	});
 }
 
 void UdpClient::Write( const DataPtr& data )
 {
-	Weak weak = GetWeak();
-	sendSocket_.async_send_to( asio::buffer(*data ), targetEp_, [ data, weak ]( const error_code& ec, size_t size )
-	{
-		if( ec )
-		{
-			COIP_LOG_ERR( "UdpClient write failed: %s", ec.message().data() )
-			return;
-		}
-		COIP_LOG_DEBUG( "UdpClient write %zu bytes", size )
-	});
+	error_code errorCode;
+	auto size = udpSocket_.send_to( asio::buffer( *data ), targetEp_, 0, errorCode );
+     if( errorCode )
+     {
+          COIP_LOG_ERR( "UdpClient write failed: %s", errorCode.message().data() )
+          return;
+     }
+     COIP_LOG_DEBUG( "UdpClient write %zu bytes", size )
+}
+
+void UdpClient::StopImpl()
+{
+     error_code ec;
+     if( isStarted_ )
+     {
+          udpSocket_.cancel( ec );
+     }
+     if( udpSocket_.is_open() )
+     {
+          udpSocket_.close( ec );
+     }
 }
 
 }

@@ -1,8 +1,7 @@
 #ifndef COMOVERIP_UDP_CLIENT_H
 #define COMOVERIP_UDP_CLIENT_H
 
-#include <exchange/actor.h>
-#include <exchange/exchange.h>
+#include <i_reader.h>
 #include <common/data.h>
 #include <asio.hpp>
 
@@ -10,7 +9,7 @@ namespace comoverip
 {
 
 /// @brief Клиент udp
-class UdpClient: public Actor< UdpClient >
+class UdpClient: public IReader< UdpClient >
 {
 public:
     /// @brief Конструктор класса. Открывает сокет приема и передачи
@@ -20,19 +19,15 @@ public:
     UdpClient( const std::shared_ptr< asio::io_context >& ioContext, const asio::ip::address& addr,
     	   asio::ip::port_type port );
 
-    ~UdpClient() override = default;
+    ~UdpClient() override;
 
     void Receive( const std::shared_ptr< BaseMessage >& message) override;
 
-    /// @brief Установить id актора для отправки сообщений
-    /// @param[in] id
-    void SetDispatcherId( ActorId id );
-
     /// @brief Старт работы, начать принимать сообщения
-    void Start();
+    void Start() override;
 
     /// @brief Остановка работы, завершить все асинхронные задачи и закрыть сокеты
-    void Stop();
+    void Stop() override;
 
 private:
     /// @brief Создать асинхронную задачу на принятие сообщения
@@ -42,12 +37,13 @@ private:
     /// @param[in] data
     void Write( const DataPtr& data );
 
+    /// @brief Освобождение ресурсов
+    void StopImpl();
+
 private:
     asio::ip::udp::endpoint targetEp_;
-    asio::ip::udp::socket receiveSocket_;
-    asio::ip::udp::socket sendSocket_;
-    ActorId dispatcherId_;
-    bool isStarted_;
+    asio::ip::udp::socket udpSocket_;
+    std::atomic< bool > isStarted_;
 };
 
 }
