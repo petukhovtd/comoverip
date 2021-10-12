@@ -3,8 +3,7 @@
 
 #include <string>
 #include <asio.hpp>
-#include <exchange/actor.h>
-#include <exchange/exchange.h>
+#include <i_reader.h>
 #include <exchange/message.h>
 #include <common/data.h>
 
@@ -13,7 +12,7 @@ namespace comoverip
 
 /// @brief Клиент последовательного порта
 class RtuClient
-          : public Actor< RtuClient >
+          : public IReader< RtuClient >
 {
 public:
      /// @brief Конструктор класса. Открывает последовательный порт
@@ -34,29 +33,27 @@ public:
 
      void Receive( const std::shared_ptr< BaseMessage >& message ) override;
 
-     /// @brief Установить id актора для отправки сообщений
-     /// @param[in] id
-     void SetDispatcherId( ActorId id );
-
      /// @brief Старт работы, начать чтение из порта
-     void Start();
+     void Start() override;
 
      /// @brief Остановка работы, завершить все асинхронные задачи и закрыть порт
-     void Stop();
+     void Stop() override;
 
 private:
      /// @brief Создать асинхронную задачу на чтение
      void PushReadTask();
 
-     /// @brief Записать асинхронно данные в порт
+     /// @brief Записать синхронно данные в порт
      /// @param[in] data
      void Write( const DataPtr& data );
+
+     /// @brief Реализация остановки работы
+     void StopImpl();
 
 private:
      std::string portName_;
      asio::serial_port serialPort_;
-     ActorId dispatcherId_;
-     bool isStarted_;
+     std::atomic< bool > isStarted_;
 };
 
 }

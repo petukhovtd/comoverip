@@ -16,7 +16,6 @@ RtuClient::RtuClient( const std::shared_ptr< io_context >& ioContext,
                       serial_port::parity parity )
           : portName_( std::move( portName ) )
           , serialPort_( *ioContext )
-          , dispatcherId_( defaultId )
           , isStarted_( false )
 {
      serialPort_.open( portName_ );
@@ -29,7 +28,7 @@ RtuClient::RtuClient( const std::shared_ptr< io_context >& ioContext,
 
 RtuClient::~RtuClient()
 {
-     Stop();
+     StopImpl();
 }
 
 void RtuClient::Receive( const std::shared_ptr< BaseMessage >& message )
@@ -39,12 +38,6 @@ void RtuClient::Receive( const std::shared_ptr< BaseMessage >& message )
      {
           Write( targetMessage->GetData() );
      }
-}
-
-
-void RtuClient::SetDispatcherId( ActorId id )
-{
-     dispatcherId_ = id;
 }
 
 void RtuClient::Start()
@@ -58,22 +51,14 @@ void RtuClient::Start()
 
 void RtuClient::Stop()
 {
-     if( isStarted_ )
-     {
-          serialPort_.cancel();
-     }
-     if( serialPort_.is_open() )
-     {
-          serialPort_.close();
-     }
+     StopImpl();
 }
 
 void RtuClient::PushReadTask()
 {
      DataPtr data = BuildDataBuffer();
      Weak weak = GetWeak();
-     async_read( serialPort_, buffer( *data ), transfer_at_least( 1 ),
-                 [ weak, data ]( const error_code& ec, size_t size )
+     serialPort_.async_read_some( buffer( *data ),[ weak, data ]( const error_code& ec, const size_t size )
                  {
                       if( ec )
                       {
@@ -88,7 +73,7 @@ void RtuClient::PushReadTask()
                       }
                       data->resize( size );
                       COIP_LOG_DEBUG( "RtuClient read %zu bytes", size )
-                      Exchange::Send( self->dispatcherId_, MessageData::Create( data ) );
+                      Exchange::Send( self->writerId_, MessageData::Create( data ) );
                       self->PushReadTask();
                  } );
 }
@@ -96,16 +81,28 @@ void RtuClient::PushReadTask()
 void RtuClient::Write( const DataPtr& data )
 {
      Weak weak = GetWeak();
-     async_write( serialPort_, buffer( *data ),
-                  [ weak, data ]( const error_code& ec, size_t size )
-                  {
-                       if( ec )
-                       {
-                            COIP_LOG_ERR( "RtuClient write failed: %s", ec.message().data() )
-                            return;
-                       }
-                       COIP_LOG_DEBUG( "RtuClient write %zu bytes", size )
-                  } );
+     Ptr self = weak.lock();
+     error_code errorCode;
+     auto size = serialPort_.write_some( buffer( *data ), errorCode );
+     if( errorCode )
+     {
+          COIP_LOG_ERR( "RtuClient write failed: %s", errorCode.message().data() )
+          return;
+     }
+     COIP_LOG_DEBUG( "RtuClient write %zu bytes", size )
+}
+
+void RtuClient::StopImpl()
+{
+     error_code ec;
+     if( isStarted_ )
+     {
+          serialPort_.cancel( ec );
+     }
+     if( serialPort_.is_open() )
+     {
+          serialPort_.close( ec );
+     }
 }
 
 }
