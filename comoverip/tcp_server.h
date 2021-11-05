@@ -1,7 +1,7 @@
 #ifndef COMOVERIP_TCP_SERVER_H
 #define COMOVERIP_TCP_SERVER_H
 
-#include <i_reader.h>
+#include <i_source.h>
 #include <common/data.h>
 #include <asio.hpp>
 
@@ -10,13 +10,23 @@ namespace comoverip
 
 /// @brief Tcp сервер
 class TcpServer
-          : public IReader< TcpServer >
+          : public ISource, public Actor< TcpServer >
 {
 public:
+     struct Args: public ISource::Args
+     {
+          asio::ip::port_type port;
+
+          explicit Args( asio::ip::port_type p )
+          : ISource::Args( ISource::Type::TcpServer )
+          , port( p )
+          {}
+     };
+
      /// @brief Конструктор класса
      /// @param[in,out] ioContext
-     /// @param[in] port
-     TcpServer( const std::shared_ptr< asio::io_context >& ioContext, asio::ip::port_type port );
+     /// @param[in] args
+     TcpServer( const std::shared_ptr< asio::io_context >& ioContext, const Args& args );
 
      void Receive( const std::shared_ptr< BaseMessage >& message ) override;
 

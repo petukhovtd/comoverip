@@ -7,12 +7,11 @@ using namespace asio;
 namespace comoverip
 {
 
-TcpClient::TcpClient( const std::shared_ptr< asio::io_context >& ioContext, const asio::ip::address& addr,
-                      asio::ip::port_type port )
+TcpClient::TcpClient( const std::shared_ptr< asio::io_context >& ioContext, const Args& args )
 : tcpSocket_( *ioContext )
 , isStarted_( false )
 {
-     ip::tcp::endpoint ep( addr, port );
+     ip::tcp::endpoint ep( args.addr, args.port );
      tcpSocket_.connect( ep );
 }
 

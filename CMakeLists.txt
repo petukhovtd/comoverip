@@ -13,28 +13,23 @@ set(INCLUDES
           contrib/asio/asio/include
 )
 
-set(SOURCES_EXCHANGE
+set(SOURCES
           ${PROJECT_SOURCE_DIR}/comoverip/exchange/exchange.cpp
-)
-
-set(SOURCES_COMMON
           ${PROJECT_SOURCE_DIR}/comoverip/common/logger.cpp
           ${PROJECT_SOURCE_DIR}/comoverip/common/data.cpp
-)
-
-set(SOURCES
-          ${SOURCES_EXCHANGE}
-          ${SOURCES_COMMON}
-          comoverip/message_data.cpp
-          comoverip/rtu_client.cpp
-          comoverip/udp_client.cpp
-          comoverip/tcp_client.cpp
-          comoverip/tcp_server.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/string_parser.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/source_args_parser.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/configurator.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/message_data.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/rtu_client.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/udp_client.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/tcp_client.cpp
+          ${PROJECT_SOURCE_DIR}/comoverip/tcp_server.cpp
 )
 
 include_directories(${INCLUDES})
 
-add_executable(${PROJECT_NAME} main.cpp ${SOURCES})
+add_executable(${PROJECT_NAME} comoverip/comoverip.cpp ${SOURCES})
 
 target_link_libraries(
           ${PROJECT_NAME}

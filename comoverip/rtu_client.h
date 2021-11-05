@@ -3,7 +3,7 @@
 
 #include <string>
 #include <asio.hpp>
-#include <i_reader.h>
+#include <i_source.h>
 #include <exchange/message.h>
 #include <common/data.h>
 
@@ -12,22 +12,28 @@ namespace comoverip
 
 /// @brief Клиент последовательного порта
 class RtuClient
-          : public IReader< RtuClient >
+          : public ISource, public Actor< RtuClient >
 {
 public:
+     struct Args: ISource::Args
+     {
+          std::string portName;
+          asio::serial_port::baud_rate baudRate;
+          asio::serial_port::character_size characterSize = asio::serial_port::character_size();
+          asio::serial_port::stop_bits stopBits = asio::serial_port::stop_bits();
+          asio::serial_port::parity parity = asio::serial_port::parity();
+
+          Args( std::string port, asio::serial_port::baud_rate baud )
+          : ISource::Args( ISource::Type::RtuClient )
+          , portName( std::move( port ) )
+          , baudRate( baud )
+          {}
+     };
+
      /// @brief Конструктор класса. Открывает последовательный порт
      /// @param[in] ioContext
-     /// @param[in] portName
-     /// @param[in] baudRate
-     /// @param[in] characterSize
-     /// @param[in] stopBits
-     /// @param[in] parity
-     RtuClient( const std::shared_ptr< asio::io_context >& ioContext,
-                std::string portName,
-                asio::serial_port::baud_rate baudRate,
-                asio::serial_port::character_size characterSize = asio::serial_port::character_size(),
-                asio::serial_port::stop_bits stopBits = asio::serial_port::stop_bits(),
-                asio::serial_port::parity parity = asio::serial_port::parity() );
+     /// @param[in] args
+     RtuClient( const std::shared_ptr< asio::io_context >& ioContext, const Args& args );
 
      ~RtuClient() override;
 

@@ -8,21 +8,16 @@ using namespace asio;
 namespace comoverip
 {
 
-RtuClient::RtuClient( const std::shared_ptr< io_context >& ioContext,
-                      std::string portName,
-                      serial_port::baud_rate baudRate,
-                      serial_port::character_size characterSize,
-                      serial_port::stop_bits stopBits,
-                      serial_port::parity parity )
-          : portName_( std::move( portName ) )
+RtuClient::RtuClient( const std::shared_ptr< io_context >& ioContext, const Args& args )
+          : portName_( args.portName )
           , serialPort_( *ioContext )
           , isStarted_( false )
 {
      serialPort_.open( portName_ );
-     serialPort_.set_option( baudRate );
-     serialPort_.set_option( characterSize );
-     serialPort_.set_option( stopBits );
-     serialPort_.set_option( parity );
+     serialPort_.set_option( args.baudRate );
+     serialPort_.set_option( args.characterSize );
+     serialPort_.set_option( args.stopBits );
+     serialPort_.set_option( args.parity );
 }
 
 

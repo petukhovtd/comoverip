@@ -1,23 +1,36 @@
 #ifndef COMOVERIP_TCP_CLIENT_H
 #define COMOVERIP_TCP_CLIENT_H
 
-#include <i_reader.h>
+#include <i_source.h>
 #include <common/data.h>
 #include <asio.hpp>
+#include <utility>
 
 namespace comoverip
 {
 
 /// @brief Tcp клиент
-class TcpClient: public IReader< TcpClient >
+class TcpClient
+          : public ISource
+            , public Actor< TcpClient >
 {
 public:
+     struct Args: public ISource::Args
+     {
+          asio::ip::address addr;
+          asio::ip::port_type port;
+
+          Args( asio::ip::address address, asio::ip::port_type p )
+                    : ISource::Args( ISource::Type::TcpClient )
+                    , addr( std::move( address ) )
+                    , port( p )
+          {}
+     };
+
      /// @brief Подключение к серверу
      /// @param[in] ioContext
-     /// @param[in] addr
-     /// @param[in] port
-     TcpClient( const std::shared_ptr< asio::io_context >& ioContext, const asio::ip::address& addr,
-                asio::ip::port_type port );
+     /// @param[in] args
+     TcpClient( const std::shared_ptr< asio::io_context >& ioContext, const Args& args );
 
      ~TcpClient() override;
 

@@ -1,7 +1,7 @@
 #ifndef COMOVERIP_UDP_CLIENT_H
 #define COMOVERIP_UDP_CLIENT_H
 
-#include <i_reader.h>
+#include <i_source.h>
 #include <common/data.h>
 #include <asio.hpp>
 
@@ -9,15 +9,25 @@ namespace comoverip
 {
 
 /// @brief Клиент udp
-class UdpClient: public IReader< UdpClient >
+class UdpClient: public ISource, public Actor< UdpClient >
 {
 public:
+     struct Args: public ISource::Args
+     {
+          asio::ip::address addr;
+          asio::ip::port_type port;
+
+          Args( asio::ip::address a, asio::ip::port_type p )
+          : ISource::Args( ISource::Type::UdpClient )
+          , addr( std::move( a ) )
+          , port( p )
+          {}
+     };
+
     /// @brief Конструктор класса. Открывает сокет приема и передачи
     /// @param[in] ioContext
-    /// @param[in] addr
-    /// @param[in] port
-    UdpClient( const std::shared_ptr< asio::io_context >& ioContext, const asio::ip::address& addr,
-    	   asio::ip::port_type port );
+    /// @param[in] args
+    UdpClient( const std::shared_ptr< asio::io_context >& ioContext, const Args& args );
 
     ~UdpClient() override;
 

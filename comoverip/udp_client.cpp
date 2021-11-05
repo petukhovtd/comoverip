@@ -7,9 +7,9 @@ using namespace asio;
 namespace comoverip
 {
 
-UdpClient::UdpClient( const std::shared_ptr< io_context >& ioContext, const ip::address& addr, ip::port_type port )
-	  : targetEp_( addr, port )
-	  , udpSocket_( *ioContext, ip::udp::endpoint( ip::address_v4::any(), port ) )
+UdpClient::UdpClient( const std::shared_ptr< io_context >& ioContext, const Args& args )
+	  : targetEp_( args.addr, args.port )
+	  , udpSocket_( *ioContext, ip::udp::endpoint( ip::address_v4::any(), args.port ) )
 	  , isStarted_( false )
 {}
 

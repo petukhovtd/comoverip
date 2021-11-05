@@ -8,8 +8,8 @@ using namespace asio;
 namespace comoverip
 {
 
-TcpServer::TcpServer( const std::shared_ptr< asio::io_context >& ioContext, asio::ip::port_type port )
-: acceptor_( *ioContext, ip::tcp::endpoint( ip::address_v4::any(), port ) )
+TcpServer::TcpServer( const std::shared_ptr< asio::io_context >& ioContext, const Args& args )
+: acceptor_( *ioContext, ip::tcp::endpoint( ip::address_v4::any(), args.port ) )
 , socket_( *ioContext )
 , isStarted_( false )
 {}
