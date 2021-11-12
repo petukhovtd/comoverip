@@ -91,7 +91,6 @@ TEST( SourceArgParserTest, TcpClientArgs )
      EXPECT_THROW( ParsingTcpClientArgs( "127.0.0.1:aaa" ), std::invalid_argument );
      EXPECT_THROW( ParsingTcpClientArgs( "127.0.0.1:123a" ), std::invalid_argument );
      EXPECT_THROW( ParsingTcpClientArgs( "999.999.999.999:1234" ), std::system_error );
-     EXPECT_THROW( ParsingTcpClientArgs( "1:1234" ), std::system_error );
 }
 
 TEST( SourceArgParserTest, UdpClientArgs )
@@ -114,8 +113,6 @@ TEST( SourceArgParserTest, UdpClientArgs )
      EXPECT_THROW( ParsingUdpClientArgs( "127.0.0.1:aaa" ), std::invalid_argument );
      EXPECT_THROW( ParsingUdpClientArgs( "127.0.0.1:123a" ), std::invalid_argument );
      EXPECT_THROW( ParsingUdpClientArgs( "999.999.999.999:1234" ), std::system_error );
-     EXPECT_THROW( ParsingUdpClientArgs( "1:1234" ), std::system_error );
-
 }
 
 TEST( SourceArgParserTest, TcpServerArgs )

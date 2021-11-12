@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 project(comoverip)
 
-set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD 17)
 
 add_compile_options( "-Wall" )
 add_compile_options( "-Werror" )
@@ -29,11 +29,16 @@ set(SOURCES
 
 include_directories(${INCLUDES})
 
+set(LIBS pthread)
+IF(WIN32)
+    set(LIBS ${LIBS} ws2_32 wsock32)
+ENDIF()
+
 add_executable(${PROJECT_NAME} comoverip/comoverip.cpp ${SOURCES})
 
 target_link_libraries(
           ${PROJECT_NAME}
-          pthread
+          ${LIBS}
 )
 
 add_subdirectory(contrib/googletest)
