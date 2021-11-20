@@ -61,7 +61,7 @@ void TcpClient::PushReadTask()
                return;
           }
           data->resize( size );
-          COIP_LOG_DEBUG( "TcpClient read %zu bytes", size )
+          COIP_LOG_DEBUG( "TcpClient read %llu bytes", SIZE_T_TO_ULL( size ) )
           Exchange::Send( self->writerId_, MessageData::Create( data ) );
           self->PushReadTask();
      });
@@ -76,7 +76,7 @@ void TcpClient::Write( const DataPtr& data )
           COIP_LOG_ERR( "TcpClient write failed: %s", errorCode.message().data() )
           return;
      }
-     COIP_LOG_DEBUG( "TcpClient write %zu bytes", size )
+     COIP_LOG_DEBUG( "TcpClient write %llu bytes", SIZE_T_TO_ULL( size ) )
 }
 
 void TcpClient::StopImpl()

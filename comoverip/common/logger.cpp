@@ -87,9 +87,9 @@ int Logger::SPrintTimeStamp( char* buffer, size_t maxLen )
 {
      std::chrono::system_clock::time_point timePoint = std::chrono::system_clock::now();
      std::time_t tp = std::chrono::system_clock::to_time_t( timePoint );
-     uint64_t partSecond = ( timePoint.time_since_epoch().count() % 1000000000 ) / 1000;
+     unsigned int partSecond = ( timePoint.time_since_epoch().count() % 1000000000 ) / 1000;
      tm* tm = std::localtime( &tp );
-     return snprintf( buffer, maxLen, "%04d-%02d-%02d %02d:%02d:%02d.%06lu",
+     return snprintf( buffer, maxLen, "%04d-%02d-%02d %02d:%02d:%02d.%06u",
                       ( tm->tm_year + 1900 ), tm->tm_mon, tm->tm_mday,
                       tm->tm_hour, tm->tm_min, tm->tm_sec, partSecond );
 }

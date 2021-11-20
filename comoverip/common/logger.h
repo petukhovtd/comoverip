@@ -62,4 +62,6 @@ private:
 #define COIP_LOG_INFO( format, ... ) COIP_LOG( comoverip::Logger::LogInfo, format, ##__VA_ARGS__ )
 #define COIP_LOG_DEBUG( format, ... ) COIP_LOG( comoverip::Logger::LogDebug, format, ##__VA_ARGS__ )
 
+#define SIZE_T_TO_ULL( s ) static_cast< unsigned long long >( s )
+
 #endif

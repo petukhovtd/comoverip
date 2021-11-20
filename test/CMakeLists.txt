@@ -14,6 +14,7 @@ add_executable(${TEST_TARGET} ${SOURCES_TEST})
 
 target_link_libraries(
           ${TEST_TARGET}
+          ${LIBS}
           gtest
           gtest_main
 )
