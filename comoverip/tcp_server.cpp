@@ -79,7 +79,7 @@ void TcpServer::PushReadTask()
                }
                if( !ec )
                {
-                    COIP_LOG_DEBUG( "TcpServer read %llu bytes", size )
+                    COIP_LOG_DEBUG( "TcpServer read %llu bytes", SIZE_T_TO_ULL( size ) )
                     data->resize( size );
                     Exchange::Send( self->writerId_, MessageData::Create( data ) );
                     self->PushReadTask();
@@ -115,7 +115,7 @@ void TcpServer::Write( const DataPtr& data )
           COIP_LOG_ERR( "TcpServer write failed: %s", errorCode.message().data() )
           return;
      }
-     COIP_LOG_DEBUG( "TcpServer write %llu bytes", size )
+     COIP_LOG_DEBUG( "TcpServer write %llu bytes", SIZE_T_TO_ULL( size ) )
 }
 
 void TcpServer::StopImpl()

@@ -60,7 +60,8 @@ void UdpClient::PushReadTask()
 			return;
 		}
 		data->resize( size );
-          COIP_LOG_DEBUG( "UdpClient read %llu bytes, from %s:%u", size, receiveEp->address().to_string().c_str(),
+          COIP_LOG_DEBUG( "UdpClient read %llu bytes, from %s:%u", SIZE_T_TO_ULL( size ),
+                          receiveEp->address().to_string().c_str(),
                           receiveEp->port() )
 		Exchange::Send( self->writerId_, MessageData::Create( data ) );
 		self->PushReadTask();
@@ -76,7 +77,7 @@ void UdpClient::Write( const DataPtr& data )
           COIP_LOG_ERR( "UdpClient write failed: %s", errorCode.message().data() )
           return;
      }
-     COIP_LOG_DEBUG( "UdpClient write %llu bytes", size )
+     COIP_LOG_DEBUG( "UdpClient write %llu bytes", SIZE_T_TO_ULL( size ) )
 }
 
 void UdpClient::StopImpl()
